@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Localization;
 
 /// <summary>
 /// This class contains Settings specific to Locations only
@@ -7,6 +8,7 @@
 [CreateAssetMenu(fileName = "NewLocation", menuName = "Scene Data/Location")]
 public class LocationSO : GameSceneSO
 {
-	[Header("Location specific")]
+	public LocalizedString locationName;
+	public AudioClip musicTrack;
 	public int enemiesCount; //Example variable, will change later
 }

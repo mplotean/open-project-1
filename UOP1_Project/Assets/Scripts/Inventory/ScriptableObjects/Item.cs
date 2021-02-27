@@ -1,13 +1,13 @@
-﻿using UnityEngine;
-
+﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Localization;
 // Created with collaboration from:
 // https://forum.unity.com/threads/inventory-system.980646/
 [CreateAssetMenu(fileName = "Item", menuName = "Inventory/Item", order = 51)]
-public class Item : ScriptableObject
+public class Item : SerializableScriptableObject
 {
 	[Tooltip("The name of the item")]
-	[SerializeField]
-	private string _name = default;
+	[SerializeField] private LocalizedString _name = default;
 
 	[Tooltip("A preview image for the item")]
 	[SerializeField]
@@ -15,8 +15,7 @@ public class Item : ScriptableObject
 
 	[Tooltip("A description of the item")]
 	[SerializeField]
-	[Multiline]
-	private string _description = default;
+	private LocalizedString _description = default;
 
 
 	[Tooltip("The type of item")]
@@ -27,10 +26,22 @@ public class Item : ScriptableObject
 	[SerializeField]
 	private GameObject _prefab = default;
 
-	public string Name => _name;
+	[Tooltip("The list of the ingredients necessary to the recipe")]
+	[SerializeField]
+	private List<ItemStack> _ingredientsList = new List<ItemStack>();
+
+	[Tooltip("The resulting dish to the recipe")]
+	[SerializeField]
+	private Item _resultingDish = default;
+
+
+
+	public LocalizedString Name => _name;
 	public Sprite PreviewImage => _previewImage;
-	public string Description => _description;
+	public LocalizedString Description => _description;
 	public ItemType ItemType => _itemType;
 	public GameObject Prefab => _prefab;
+	public List<ItemStack> IngredientsList => _ingredientsList;
+	public Item ResultingDish => _resultingDish;
 
 }

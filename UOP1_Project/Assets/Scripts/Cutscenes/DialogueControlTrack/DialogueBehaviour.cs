@@ -1,40 +1,45 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Playables;
 
 [Serializable]
 public class DialogueBehaviour : PlayableBehaviour
 {
-	[SerializeField] private DialogueLineSO _dialogueLine = default;
+	[SerializeField] private LocalizedString _dialogueLine = default;
+	[SerializeField] private ActorSO _actor = default;
+
 	[SerializeField] private bool _pauseWhenClipEnds = default; //This won't work if the clip ends on the very last frame of the Timeline
 
-	[HideInInspector] public CutsceneManager cutsceneManager;
+	[HideInInspector] public DialogueLineChannelSO PlayDialogueEvent;
+	[HideInInspector] public VoidEventChannelSO PauseTimelineEvent;
 
 	private bool _dialoguePlayed;
 
 	/// <summary>
-	/// Displays a line of dialogue on screen by interfacing with the <c>CutsceneManager</c>. This happens as soon as the playhead reaches the clip.
+	/// Displays a line of dialogue on screen by interfacing with the <c>CutsceneManager</c>. 
 	/// </summary>
-	public override void OnBehaviourPlay(Playable playable, FrameData info)
+	public override void ProcessFrame(Playable playable, FrameData info, object playerData)
 	{
 		if (_dialoguePlayed)
 			return;
 
-		// Need to ask the CutsceneManager if the cutscene is playing, since the graph is not actually stopped/paused: it's just going at speed 0
-		// This check is needed because when two clips are side by side and the first one stops the cutscene,
-		// the OnBehaviourPlay of the second clip is still called and thus its dialogueLine is played (prematurely). This check makes sure it's not.
-		if (playable.GetGraph().IsPlaying()
-			&& cutsceneManager.IsCutscenePlaying)
+		if (Application.isPlaying)  //TODO: Find a way to "play" dialogue lines even when scrubbing the Timeline not in Play Mode
 		{
-			//TODO: Find a way to "play" dialogue lines even when scrubbing the Timeline not in Play Mode
-			if (_dialogueLine != null)
+			// Need to ask the CutsceneManager if the cutscene is playing, since the graph is not actually stopped/paused: it's just going at speed 0.
+			if (playable.GetGraph().IsPlaying())
+			//&& cutsceneManager.IsCutscenePlaying) Need to find an alternative to this 
 			{
-				cutsceneManager.PlayDialogueFromClip(_dialogueLine);
-				_dialoguePlayed = true;
-			}
-			else
-			{
-				Debug.LogWarning("This clip contains no DialogueLine");
+				if (_dialogueLine != null && _actor != null)
+				{
+					if (PlayDialogueEvent != null)
+						PlayDialogueEvent.RaiseEvent(_dialogueLine, _actor);
+					_dialoguePlayed = true;
+				}
+				else
+				{
+					Debug.LogWarning("This clip contains no DialogueLine");
+				}
 			}
 		}
 	}
@@ -49,7 +54,10 @@ public class DialogueBehaviour : PlayableBehaviour
 			&& _dialoguePlayed)
 		{
 			if (_pauseWhenClipEnds)
-				cutsceneManager.PauseTimeline();
+				if (PauseTimelineEvent != null)
+				{
+					PauseTimelineEvent.OnEventRaised();
+				}
 		}
 	}
 }
